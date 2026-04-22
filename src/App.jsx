@@ -26,6 +26,7 @@ const DEFAULT_DATA = {
   bio: "Software developer & content creator.",
   avatarColor: "#6366f1",
   avatarLetter: "B",
+  avatarImg: logoSrc,
   sections: [
     {
       id: "s1",
@@ -56,7 +57,12 @@ function uid() {
 function loadData() {
   try {
     const raw = localStorage.getItem("bio-page-data");
-    if (raw) return JSON.parse(raw);
+    if (raw) {
+      const saved = JSON.parse(raw);
+      const merged = { ...DEFAULT_DATA, ...saved };
+      if (!merged.avatarImg) merged.avatarImg = DEFAULT_DATA.avatarImg;
+      return merged;
+    }
   } catch {}
   return DEFAULT_DATA;
 }
@@ -89,15 +95,47 @@ function EditProfileModal({ data, onSave, onClose }) {
   const [bio, setBio] = useState(data.bio);
   const [avatarColor, setAvatarColor] = useState(data.avatarColor);
   const [avatarLetter, setAvatarLetter] = useState(data.avatarLetter);
+  const [avatarImg, setAvatarImg] = useState(data.avatarImg || null);
+  const fileRef = useRef(null);
+
+  function handleImageChange(e) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => setAvatarImg(ev.target.result);
+    reader.readAsDataURL(file);
+  }
 
   function handleSave() {
-    onSave({ name: name.trim() || "Your Name", handle: handle.trim(), bio: bio.trim(), avatarColor, avatarLetter: avatarLetter.trim().slice(0,1).toUpperCase() || name.trim().slice(0,1).toUpperCase() || "?" });
+    onSave({ name: name.trim() || "Your Name", handle: handle.trim(), bio: bio.trim(), avatarColor, avatarLetter: avatarLetter.trim().slice(0,1).toUpperCase() || name.trim().slice(0,1).toUpperCase() || "?", avatarImg });
     onClose();
   }
 
   return (
     <Modal onClose={onClose}>
       <h2 className="modalTitle">Edit Profile</h2>
+
+      <div className="modalField">
+        <label className="modalLabel">Photo</label>
+        <div className="avatarUploadRow">
+          <div className="avatarPreview" style={{ background: avatarColor }}>
+            {avatarImg
+              ? <img src={avatarImg} alt="preview" className="avatarImg" />
+              : <span>{avatarLetter || "?"}</span>}
+          </div>
+          <div className="avatarUploadBtns">
+            <button className="btnSecondary" onClick={() => fileRef.current?.click()} type="button">
+              Upload Photo
+            </button>
+            {avatarImg && (
+              <button className="btnSecondary" onClick={() => setAvatarImg(null)} type="button">
+                Remove
+              </button>
+            )}
+          </div>
+          <input ref={fileRef} type="file" accept="image/*" style={{ display: "none" }} onChange={handleImageChange} />
+        </div>
+      </div>
 
       <div className="modalField">
         <label className="modalLabel">Avatar Color</label>
@@ -453,7 +491,9 @@ export default function App() {
         <header className="profileHeader">
           <div className="avatarWrap">
             <div className="avatar" style={{ background: data.avatarColor }}>
-              <img src={logoSrc} alt={data.name} className="avatarImg" />
+              {data.avatarImg
+                ? <img src={data.avatarImg} alt={data.name} className="avatarImg" />
+                : data.avatarLetter}
             </div>
             {editing && (
               <button className="avatarEditBtn" onClick={() => setEditProfileOpen(true)} aria-label="Edit profile">

@@ -126,6 +126,32 @@ body {
   transform: translateY(8%);
 }
 
+.avatarUploadRow {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.avatarPreview {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  font-weight: 700;
+  color: #fff;
+  overflow: hidden;
+}
+
+.avatarUploadBtns {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
 .avatarEditBtn {
   position: absolute;
   bottom: 0; right: 0;
